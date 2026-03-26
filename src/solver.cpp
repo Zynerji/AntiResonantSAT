@@ -200,9 +200,10 @@ OmegaResult AntiResonantSolver::solve_single_omega(
     double saved = config_.omega;
     config_.omega = omega;
 
-    auto bronze = run_shell(formula, n_vars, BRONZE_BETA, Chirality::Right);
-    auto silver = run_shell(formula, n_vars, SILVER_BETA, Chirality::Left);
-    auto golden = run_shell(formula, n_vars, GOLDEN_BETA, Chirality::Right);
+    // LRL chirality: left-right-left outperforms RLR at n>=50
+    auto bronze = run_shell(formula, n_vars, BRONZE_BETA, Chirality::Left);
+    auto silver = run_shell(formula, n_vars, SILVER_BETA, Chirality::Right);
+    auto golden = run_shell(formula, n_vars, GOLDEN_BETA, Chirality::Left);
 
     auto voted = compound_vote(formula, n_vars, bronze, silver, golden);
     double voted_rho = evaluate_sat(formula, voted);

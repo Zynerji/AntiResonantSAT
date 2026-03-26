@@ -180,9 +180,10 @@ class AntiResonantSolver:
         saved_omega = self.config.omega
         self.config.omega = omega
 
-        br_assign, br_rho, _ = self._run_shell(formula, n_vars, BRONZE_BETA, +1)
-        ag_assign, ag_rho, _ = self._run_shell(formula, n_vars, SILVER_BETA, -1)
-        au_assign, au_rho, _ = self._run_shell(formula, n_vars, PHI, +1)
+        # LRL chirality: left-right-left outperforms RLR at n>=50
+        br_assign, br_rho, _ = self._run_shell(formula, n_vars, BRONZE_BETA, -1)
+        ag_assign, ag_rho, _ = self._run_shell(formula, n_vars, SILVER_BETA, +1)
+        au_assign, au_rho, _ = self._run_shell(formula, n_vars, PHI, -1)
 
         # Compound vote
         if self.config.adaptive_voting:
