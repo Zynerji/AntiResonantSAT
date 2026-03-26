@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "antiresonant-sat"
+version = "0.1.0"
+description = "Anti-Resonant Spectral SAT Solver — chiral multi-shell heuristic for Max-3-SAT"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [{name = "Christian Knopp"}]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+benchmark = ["networkx>=3.0"]
+
+[tool.setuptools.packages.find]
+where = ["python"]

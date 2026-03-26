@@ -1,0 +1,32 @@
+# Build
+build/
+cmake-build-*/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+*.whl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Data (large DIMACS files)
+data/satlib/
+!data/satlib/.gitkeep
+!data/README.md
+
+# Benchmark results (optional commit)
+benchmark_results/*.json
