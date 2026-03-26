@@ -112,10 +112,16 @@ class SolverConfig:
     adaptive_voting: bool = True
     multi_omega: bool = True  # try multiple omega values, keep best
     # Pendulum omega: use powers of bronze metallic mean as frequency spread.
-    # beta_3^1 = 3.303, beta_3^2 = 10.908, beta_3^3 = 36.02
-    # This makes the entire system self-referential — metallic means control
-    # both phase spacing AND frequency, with zero free parameters.
-    omega_spread: tuple = (BRONZE_BETA, BRONZE_BETA**2, BRONZE_BETA**3)
+    # More powers = more coverage of the omega landscape = better results.
+    # Sweep confirmed: (1,2,3,4,5) beats (1,2,3) at every problem size.
+    # Zero free parameters — metallic means control everything.
+    omega_spread: tuple = (
+        BRONZE_BETA,        # 3.303
+        BRONZE_BETA**2,     # 10.908
+        BRONZE_BETA**3,     # 36.02
+        BRONZE_BETA**4,     # 118.95
+        BRONZE_BETA**5,     # 392.80
+    )
     bronze_weight: float = 0.45
     silver_weight: float = 0.30
     golden_weight: float = 0.25

@@ -33,13 +33,15 @@ public:
         bool multi_omega = true;    // try multiple omega values, keep best
 
         // Pendulum omega: powers of bronze metallic mean as frequency spread.
-        // beta_3^1 = 3.303, beta_3^2 = 10.908, beta_3^3 = 36.02
+        // More powers = more coverage = better. Sweep confirmed (1,2,3,4,5) wins.
         // Zero free parameters — metallic means control everything.
-        static constexpr int N_OMEGA_SPREAD = 3;
+        static constexpr int N_OMEGA_SPREAD = 5;
         double omega_spread[N_OMEGA_SPREAD] = {
-            BRONZE_BETA,
-            BRONZE_BETA * BRONZE_BETA,
-            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA,
+            BRONZE_BETA,                                                    // 3.303
+            BRONZE_BETA * BRONZE_BETA,                                      // 10.908
+            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA,                        // 36.02
+            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA,          // 118.95
+            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA, // 392.80
         };
 
         // Shell weights for compound voting (before adaptation)
