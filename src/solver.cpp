@@ -28,18 +28,11 @@ AntiResonantSolver::ShellResult AntiResonantSolver::run_shell(
     );
     auto L = build_laplacian(adj);
 
-    // 3. Check cache
+    // 3. Solve with basis cache (v9.3 incremental caching)
+    // First solve: full eigsh → cache. Subsequent: Rayleigh-Ritz refinement.
     EigenResult eigen_result;
-    uint64_t cache_key = 0;
-
     if (config_.use_cache) {
-        cache_key = SpectralCache::hash_matrix(L);
-        if (cache_.lookup(cache_key, eigen_result)) {
-            // Cache hit — skip eigensolve
-        } else {
-            eigen_result = smallest_eigenpairs(L, config_.k_eigenvectors);
-            cache_.insert(cache_key, eigen_result);
-        }
+        eigen_result = solve_with_basis_cache(cache_, L, config_.k_eigenvectors);
     } else {
         eigen_result = smallest_eigenpairs(L, config_.k_eigenvectors);
     }

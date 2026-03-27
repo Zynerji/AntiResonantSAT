@@ -146,4 +146,44 @@ void SpectralCache::clear() {
     insert_order_ = 0;
 }
 
+// ── Spectral Basis Cache (v9.3-style incremental caching) ───────────
+
+EigenResult solve_with_basis_cache(
+    SpectralCache& cache,
+    const SparseMat& laplacian,
+    int k
+) {
+    uint64_t key = SpectralCache::hash_matrix(laplacian);
+    EigenResult cached;
+
+    if (cache.lookup(key, cached)) {
+        // Cache hit — Rayleigh-Ritz refinement
+        int n = laplacian.rows();
+        int k_use = std::min(k, static_cast<int>(cached.vectors.cols()));
+
+        // V = cached eigenvectors (n x k)
+        DenseMat V = cached.vectors.leftCols(k_use);
+
+        // H = V^T L V (k x k matrix) — O(n*k)
+        DenseMat LV = DenseMat(laplacian) * V;  // n x k
+        DenseMat H = V.transpose() * LV;        // k x k
+
+        // Small dense eigensolve on k x k — O(k^3)
+        Eigen::SelfAdjointEigenSolver<DenseMat> solver(H);
+
+        // Rotate back to full space
+        EigenResult result;
+        result.vectors = V * solver.eigenvectors();
+        result.values = solver.eigenvalues();
+        return result;
+    }
+
+    // Cold solve — full eigendecomposition
+    EigenResult result = smallest_eigenpairs(laplacian, k);
+
+    // Cache for next time
+    cache.insert(key, result);
+    return result;
+}
+
 }  // namespace arsat

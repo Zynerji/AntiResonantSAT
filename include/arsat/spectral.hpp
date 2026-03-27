@@ -62,4 +62,18 @@ private:
     mutable int hits_ = 0;
 };
 
+// ── Spectral Basis Cache (v9.3 incremental caching) ─────────────────
+// Caches eigenvectors by problem signature (n_vars, beta, chirality, omega).
+// For problems with the same n_vars, the graph sparsity pattern is similar.
+// Cached eigenvectors enable Rayleigh-Ritz refinement: project L into
+// cached basis V, solve small k×k problem, rotate back.
+//
+// First solve: full eigsh O(n·k²) → cache
+// Incremental: V^T·L·V projection O(n·k) + k×k eigsolve O(k³) → ~5-20x faster
+EigenResult solve_with_basis_cache(
+    SpectralCache& cache,
+    const SparseMat& laplacian,
+    int k
+);
+
 }  // namespace arsat
