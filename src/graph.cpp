@@ -176,4 +176,32 @@ double evaluate_sat(const Formula& formula, const Assignment& assignment) {
     return static_cast<double>(satisfied) / formula.size();
 }
 
+// ── Greedy flip ─────────────────────────────────────────────────────
+
+Assignment greedy_flip(const Formula& formula, const Assignment& assignment, int max_passes) {
+    Assignment assign = assignment;
+    int n = assign.size();
+    int m = formula.size();
+    bool improved = true;
+    int passes = 0;
+
+    while (improved && passes < max_passes) {
+        improved = false;
+        ++passes;
+        double current_rho = evaluate_sat(formula, assign);
+
+        for (int i = 0; i < n; ++i) {
+            assign[i] = -assign[i];  // flip
+            double new_rho = evaluate_sat(formula, assign);
+            if (new_rho > current_rho) {
+                current_rho = new_rho;
+                improved = true;
+            } else {
+                assign[i] = -assign[i];  // unflip
+            }
+        }
+    }
+    return assign;
+}
+
 }  // namespace arsat

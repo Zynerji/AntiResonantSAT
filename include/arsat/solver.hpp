@@ -25,11 +25,13 @@ namespace arsat {
 class AntiResonantSolver {
 public:
     struct Config {
-        int k_eigenvectors = 2;    // eigenvectors per shell
+        int k_eigenvectors = 4;    // eigenvectors per shell
         double omega = 1.0;        // frequency parameter (used when multi_omega=false)
         bool use_mobius = true;     // apply Mobius closure
         bool use_cache = true;     // enable spectral cache
         bool adaptive_voting = true; // clause-satisfaction-adaptive weights
+        bool greedy_refine = true;  // greedy 1-flip post-processing
+        int greedy_passes = 2;      // max passes of greedy flip
         bool multi_omega = true;    // try multiple omega values, keep best
 
         // Pendulum omega: powers of bronze metallic mean as frequency spread.

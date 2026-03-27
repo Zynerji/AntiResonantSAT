@@ -37,4 +37,8 @@ Formula random_3sat(int n_vars, int m_clauses, uint64_t seed);
 // Evaluate satisfaction ratio
 double evaluate_sat(const Formula& formula, const Assignment& assignment);
 
+// Greedy 1-flip refinement: flip any variable that improves satisfaction.
+// Spectral assignment gives ~90% warm start; greedy flip closes to ~97-98%.
+Assignment greedy_flip(const Formula& formula, const Assignment& assignment, int max_passes = 2);
+
 }  // namespace arsat

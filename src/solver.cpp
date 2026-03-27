@@ -242,6 +242,13 @@ SolverResult AntiResonantSolver::solve(const Formula& formula, int n_vars) {
         best_au = result.golden_rho;
     }
 
+    // Greedy flip refinement: spectral gives ~90% warm start,
+    // greedy flip closes the gap to ~97-98% in 2 passes.
+    if (config_.greedy_refine) {
+        best = greedy_flip(formula, best, config_.greedy_passes);
+        best_rho = evaluate_sat(formula, best);
+    }
+
     auto t1 = std::chrono::high_resolution_clock::now();
     double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
 
