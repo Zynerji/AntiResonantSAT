@@ -313,7 +313,7 @@ class AntiResonantSolver:
         phases = metallic_phase_weights(n_vars, beta)
         L = build_laplacian(formula, n_vars, phases, self.config.omega, chirality)
 
-        k = min(self.config.k_eigenvectors, n_vars - 1)
+        k = min(self.config.k_eigenvectors, max(n_vars - 1, 1))
         vals, vecs = self._basis_cache.solve_cached(
             L, k, n_vars, beta, chirality, self.config.omega
         )
