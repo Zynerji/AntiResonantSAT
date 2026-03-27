@@ -96,7 +96,7 @@ void test_solver_beats_random() {
         auto formula = random_3sat(n, m, 42 + seed);
 
         // Solver
-        AntiResonantSolver solver({});
+        AntiResonantSolver solver;
         auto result = solver.solve(formula, n);
         solver_sum += result.satisfaction_ratio;
 
@@ -117,7 +117,7 @@ void test_solver_beats_random() {
 
 void test_solver_large() {
     auto formula = random_3sat(200, 840, 42);
-    AntiResonantSolver solver({});
+    AntiResonantSolver solver;
     auto result = solver.solve(formula, 200);
     assert(result.satisfaction_ratio >= 0);
     assert(result.assignment.size() == 200);

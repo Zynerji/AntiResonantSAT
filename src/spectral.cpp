@@ -22,32 +22,48 @@ EigenResult smallest_eigenpairs(const SparseMat& matrix, int k) {
     k = std::min(k, n - 1);
     int ncv = std::min(std::max(2 * k + 1, 20), n);
 
-    // Use shift-and-invert mode for smallest eigenvalues (much faster convergence)
-    // Shift near 0 to find smallest algebraic eigenvalues
-    Spectra::SparseSymShiftSolve<double> op(matrix);
-    Spectra::SymEigsShiftSolver<Spectra::SparseSymShiftSolve<double>> solver(op, k, ncv, 0.0);
+    // Try shift-and-invert first (fastest for smallest eigenvalues),
+    // fall back to regular solver if it fails (can throw on singular matrices)
+    try {
+        Spectra::SparseSymShiftSolve<double> op(matrix);
+        Spectra::SymEigsShiftSolver<Spectra::SparseSymShiftSolve<double>> solver(op, k, ncv, 0.0);
+        solver.init();
+        solver.compute(Spectra::SortRule::LargestMagn, 1000, 1e-10);
+        if (solver.info() == Spectra::CompInfo::Successful) {
+            return {solver.eigenvectors(), solver.eigenvalues()};
+        }
+    } catch (...) {
+        // Shift-invert failed (e.g., singular matrix) — fall through to fallback
+    }
 
-    solver.init();
-    int nconv = solver.compute(Spectra::SortRule::LargestMagn, 1000, 1e-10);
-
-    if (solver.info() != Spectra::CompInfo::Successful) {
-        // Fallback: use regular solver if shift-invert fails
+    try {
+        // Fallback: regular solver
         Spectra::SparseSymMatProd<double> op2(matrix);
         Spectra::SymEigsSolver<Spectra::SparseSymMatProd<double>> solver2(op2, k, ncv);
         solver2.init();
         solver2.compute(Spectra::SortRule::SmallestAlge, 1000, 1e-10);
 
-        if (solver2.info() != Spectra::CompInfo::Successful) {
-            // Last resort: return zero vectors
-            EigenResult result;
-            result.vectors = DenseMat::Zero(n, k);
-            result.values = DenseVec::Zero(k);
-            return result;
+        if (solver2.info() == Spectra::CompInfo::Successful) {
+            return {solver2.eigenvectors(), solver2.eigenvalues()};
         }
-        return {solver2.eigenvectors(), solver2.eigenvalues()};
+    } catch (...) {
+        // Both solvers failed
     }
 
-    return {solver.eigenvectors(), solver.eigenvalues()};
+    // Last resort: use Eigen dense eigensolver (always works but slower)
+    try {
+        DenseMat dense = DenseMat(matrix);
+        Eigen::SelfAdjointEigenSolver<DenseMat> solver3(dense);
+        EigenResult result;
+        result.vectors = solver3.eigenvectors().leftCols(k);
+        result.values = solver3.eigenvalues().head(k);
+        return result;
+    } catch (...) {
+        EigenResult result;
+        result.vectors = DenseMat::Zero(n, k);
+        result.values = DenseVec::Zero(k);
+        return result;
+    }
 }
 
 // ── Mobius closure ──────────────────────────────────────────────────────

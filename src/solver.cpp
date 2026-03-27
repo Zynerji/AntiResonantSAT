@@ -181,13 +181,7 @@ Assignment AntiResonantSolver::compound_vote(
 
 // ── Single-omega pipeline ────────────────────────────────────────────────
 
-struct OmegaResult {
-    Assignment assignment;
-    double rho;
-    double bronze_rho, silver_rho, golden_rho;
-};
-
-OmegaResult AntiResonantSolver::solve_single_omega(
+AntiResonantSolver::OmegaResult AntiResonantSolver::solve_single_omega(
     const Formula& formula, int n_vars, double omega
 ) {
     double saved = config_.omega;

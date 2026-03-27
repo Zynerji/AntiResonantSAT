@@ -39,11 +39,11 @@ public:
         // Zero free parameters — metallic means control everything.
         static constexpr int N_OMEGA_SPREAD = 5;
         double omega_spread[N_OMEGA_SPREAD] = {
-            BRONZE_BETA,                                                    // 3.303
-            BRONZE_BETA * BRONZE_BETA,                                      // 10.908
-            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA,                        // 36.02
-            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA,          // 118.95
-            BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA * BRONZE_BETA, // 392.80
+            3.3027756377319946,     // BRONZE_BETA^1
+            10.908326913559146,     // BRONZE_BETA^2
+            36.02186539041965,      // BRONZE_BETA^3
+            118.95346881596149,     // BRONZE_BETA^4
+            392.79610325667474,     // BRONZE_BETA^5
         };
 
         // Shell weights for compound voting (before adaptation)
@@ -52,7 +52,8 @@ public:
         double golden_weight = 0.25;
     };
 
-    explicit AntiResonantSolver(Config config = {});
+    explicit AntiResonantSolver(Config config);
+    AntiResonantSolver() : AntiResonantSolver(Config{}) {}
 
     // Solve a formula. Returns best assignment found.
     SolverResult solve(const Formula& formula, int n_vars);
@@ -87,8 +88,13 @@ private:
         const ShellResult& golden
     );
 
-    // Single-omega pipeline (used by multi-omega solve)
-    struct OmegaResult;
+    // Single-omega pipeline result
+    struct OmegaResult {
+        Assignment assignment;
+        double rho;
+        double bronze_rho, silver_rho, golden_rho;
+    };
+
     OmegaResult solve_single_omega(const Formula& formula, int n_vars, double omega);
 };
 
