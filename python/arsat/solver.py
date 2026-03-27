@@ -96,26 +96,66 @@ def greedy_flip(formula: Formula, assignment: np.ndarray, max_passes: int = 2) -
     """Greedy local search: flip any variable that improves satisfaction.
 
     The spectral assignment is a strong warm start — greedy flip closes
-    the gap from ~90% to ~97-98% in 2-3 passes. Each pass is O(n*m).
+    the gap from ~90% to ~97-98% in 2-3 passes.
+
+    Uses precomputed clause-variable index and incremental sat counting
+    for O(avg_clauses_per_var) per flip instead of O(m).
     """
     assign = assignment.copy()
     n = len(assign)
+    m = len(formula)
+
+    # Precompute var -> clause membership: for each var, list of (clause_idx, lit_sign)
+    var_clauses: list = [[] for _ in range(n)]
+    for c_idx, clause in enumerate(formula):
+        for lit in clause:
+            var_clauses[abs(lit) - 1].append((c_idx, lit))
+
+    # Precompute clause satisfaction counts (how many literals satisfied per clause)
+    clause_sat_count = np.zeros(m, dtype=np.int32)
+    for c_idx, clause in enumerate(formula):
+        for lit in clause:
+            v = abs(lit) - 1
+            if (lit > 0 and assign[v] > 0) or (lit < 0 and assign[v] < 0):
+                clause_sat_count[c_idx] += 1
+
+    total_sat = np.count_nonzero(clause_sat_count)
     improved = True
     passes = 0
 
     while improved and passes < max_passes:
         improved = False
         passes += 1
-        current_rho = evaluate_sat(formula, assign)
 
         for i in range(n):
-            assign[i] = -assign[i]
-            new_rho = evaluate_sat(formula, assign)
-            if new_rho > current_rho:
-                current_rho = new_rho
-                improved = True
-            else:
+            # Compute gain from flipping variable i using incremental counts
+            gain = 0
+            for c_idx, lit in var_clauses[i]:
+                v = abs(lit) - 1
+                currently_true = (lit > 0 and assign[v] > 0) or (lit < 0 and assign[v] < 0)
+                if currently_true:
+                    # This literal is satisfied. After flip it won't be.
+                    # If it's the ONLY satisfied literal, clause becomes unsat.
+                    if clause_sat_count[c_idx] == 1:
+                        gain -= 1
+                else:
+                    # This literal is unsatisfied. After flip it will be.
+                    # If clause was unsat, it becomes sat.
+                    if clause_sat_count[c_idx] == 0:
+                        gain += 1
+
+            if gain > 0:
+                # Commit flip: update assignment and sat counts
                 assign[i] = -assign[i]
+                for c_idx, lit in var_clauses[i]:
+                    v = abs(lit) - 1
+                    now_true = (lit > 0 and assign[v] > 0) or (lit < 0 and assign[v] < 0)
+                    if now_true:
+                        clause_sat_count[c_idx] += 1
+                    else:
+                        clause_sat_count[c_idx] -= 1
+                total_sat += gain
+                improved = True
 
     return assign
 
